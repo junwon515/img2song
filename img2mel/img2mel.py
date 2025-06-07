@@ -6,7 +6,7 @@ import torch.optim as optim
 import librosa
 import soundfile as sf
 import numpy as np
-from preprocess import preprocess_image, preprocess_audio
+from img2mel.preprocessor import preprocess_image, preprocess_audio
 from tqdm import tqdm
 
 class Img2MelNet(nn.Module):
