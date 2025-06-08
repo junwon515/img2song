@@ -60,25 +60,27 @@ class Img2MelNet(nn.Module):
         return self.decoder(z)
     
 class Img2Mel:
-    def __init__(self, model_path='img2mel.pth'):
+    def __init__(self, model_path='img2mel.pth', device='cpu'):
         """
         Img2Mel 클래스 초기화
 
         Args:
             model_path (str): 모델 파일 경로, 기본값은 'img2mel.pth'
+            device (str): 사용할 디바이스('cuda' 또는 'cpu'), 기본값은 'cpu'
         """
         self.model_path = model_path
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = device
         self.model = Img2MelNet().to(self.device)
         if not os.path.exists(model_path):
-            print(f'❌ 모델 파일 {model_path}이(가) 존재하지 않습니다. 먼저 학습을 진행하세요.')
-        else:
-            try:
-                self.model.load_state_dict(torch.load(model_path, map_location=self.device, weights_only=True))
-                self.model.eval()
-                print(f'✅ 모델 {model_path} 로드 완료.')
-            except Exception as e:
-                print(f'⚠️ 모델 로드 실패: {e}. 새로 학습을 진행하세요.')
+            print(f'Model file not found at {model_path}. Please train the model first.')
+            return
+        
+        try:
+            self.model.load_state_dict(torch.load(model_path, map_location=self.device, weights_only=True))
+            self.model.eval()
+            print(f'Model loaded successfully from {model_path}.')
+        except Exception as e:
+            print(f'Failed to load model from {model_path}: {e}')
 
     def train(self, epochs=10, data_dir='data'):
         """
@@ -93,7 +95,7 @@ class Img2Mel:
 
         data_samples = self.preprocess_all(data_dir)
         if not data_samples:
-            print('❌ 데이터셋이 비어 있습니다. 이미지와 오디오 파일을 확인하세요.')
+            print(f'No valid data samples found in {data_dir}. Please check your data.')
             return
         
         for epoch in range(epochs):
@@ -112,7 +114,7 @@ class Img2Mel:
             print(f'Epoch {epoch+1}/{epochs}, Loss: {avg_loss:.4f}')
 
         torch.save(self.model.state_dict(), self.model_path)
-        print(f'✅ 모델 학습 완료. {self.model_path}에 저장되었습니다.')
+        print(f'Model trained and saved to {self.model_path}.')
 
     def generate(self, image_path, output_wav='output.wav', sr=22050, duration=10):
         """
@@ -125,10 +127,10 @@ class Img2Mel:
             duration (int): 오디오 길이(초), 기본값은 10초
         """
         if not os.path.exists(self.model_path):
-            print(f'❌ 모델 파일 {self.model_path}이(가) 존재하지 않습니다. 먼저 학습을 진행하세요.')
+            print(f'Model file not found at {self.model_path}. Please train the model first.')
             return
         if not os.path.exists(image_path):
-            print(f'❌ 이미지 파일 {image_path}이(가) 존재하지 않습니다.')
+            print(f'Image file does not exist at path: {image_path}')
             return
         
         img_tensor = self.preprocess_image(image_path).unsqueeze(0).to(self.device)
@@ -142,7 +144,7 @@ class Img2Mel:
         mel_power = librosa.db_to_power(mel_db)
         audio = librosa.feature.inverse.mel_to_audio(mel_power, sr=sr, n_fft=2048, hop_length=512)
         sf.write(output_wav, audio, sr)
-        print(f'✅ 오디오 파일 {output_wav} 생성 완료.')
+        print(f'Generated audio saved to {output_wav}.')
 
     def preprocess_all(self, data_dir='data'):
         img_files = [f for f in os.listdir(data_dir) if f.endswith(('.jpg', '.jpeg', '.png', '.webp'))]
@@ -160,9 +162,9 @@ class Img2Mel:
                     mel_tensor = self.preprocess_audio(audio_path).unsqueeze(0) # [1, 1, 224, 224]
                     data_samples.append((img_tensor, mel_tensor))
                 except Exception as e:
-                    print(f'⚠️ Failed to process {base_id}: {e}')
+                    print(f'Error processing {img_file} or {audio_file}: {e}')
             else:
-                print(f'❌ {audio_file} not found for {img_file}. Skipping.')
+                print(f'No matching audio file for {img_file}. Skipping.')
         return data_samples
 
     def preprocess_image(self, image_path) -> torch.Tensor:
@@ -202,7 +204,13 @@ class Img2Mel:
         return mel_resized.squeeze(0)  # [1, 224, 224]
     
 if __name__ == '__main__':
-    img2mel = Img2Mel()
-    # img2mel.train()
-    user_input = input('Enter image path: ')
-    img2mel.generate(user_input)
+    try:
+        from util import get_device
+        img2mel = Img2Mel(device=get_device())
+        # img2mel.train()
+        user_input = input('Enter image path: ')
+        img2mel.generate(user_input)
+    except KeyboardInterrupt:
+        print('\nTraining interrupted by user.')
+    except Exception as e:
+        print(f'Error: {e}')
