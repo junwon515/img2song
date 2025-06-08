@@ -7,13 +7,12 @@ import os
 class Img2Story:
     def __init__(self, model_name: str = 'unsloth/llava-1.5-7b-hf-bnb-4bit' , device: str = 'cpu'):  
         """
-        Img2Story 클래스 초기화.
-        Llava 모델을 로드하고, 이미지와 텍스트를 처리하기 위한 프로세서를 설정합니다.
+        Img2Story 클래스 초기화
         
         Args:
-            model_name (str): 사용할 Llava 모델의 Hugging Face ID.
-                              기본값은 'unsloth/llava-1.5-7b-hf-bnb-4bit'입니다.
-            device (str): 사용할 디바이스('cuda' 또는 'cpu'). 기본값은 'cpu'입니다.
+            model_name (str): 사용할 LLaVA 모델의 이름
+                              기본값은 'unsloth/llava-1.5-7b-hf-bnb-4bit'
+            device (str): 'cpu' 또는 'cuda' (GPU 사용 시)
         """
         self.model_name = model_name
         self.device = device
@@ -31,16 +30,16 @@ class Img2Story:
                  max_new_tokens: int = 512
                  ) -> str:
         """
-        주어진 이미지 경로와 프롬프트를 사용하여 텍스트를 생성합니다.
-        
-        Args:
-            image_path (str): 이미지 파일의 경로.
-            prompt (str): 모델에 전달할 프롬프트.
-                          LLaVA의 대화형 프롬프트 형식에 맞춰 'USER: ... ASSISTANT:'를 사용하는 것이 좋습니다.
-            max_new_tokens (int): 생성할 최대 새 토큰 수.
+        이미지 경로와 프롬프트를 사용하여 스토리를 생성
 
+        Args:
+            image_path (str): 이미지 파일의 경로
+            prompt (str): 생성할 스토리에 대한 프롬프트 텍스트
+                          기본값은 'USER: What is the overall mood of this image, and what story does it tell? ASSISTANT:'
+            max_new_tokens (int): 생성할 최대 토큰 수, 기본값은 512
+            
         Returns:
-            str: 생성된 텍스트.
+            str: 생성된 스토리 텍스트
         """
         if not os.path.exists(image_path):
             raise FileNotFoundError(f'Image file does not exist at path: {image_path}')

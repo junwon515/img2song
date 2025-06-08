@@ -66,7 +66,7 @@ class Img2Mel:
 
         Args:
             model_path (str): 모델 파일 경로, 기본값은 'img2mel.pth'
-            device (str): 사용할 디바이스('cuda' 또는 'cpu'), 기본값은 'cpu'
+            device (str): 'cpu' 또는 'cuda' (GPU 사용 시)
         """
         self.model_path = model_path
         self.device = device
@@ -88,7 +88,7 @@ class Img2Mel:
         
         Args:
             epochs (int): 학습 에폭 수, 기본값은 10
-            data_dir (str): 학습 데이터 디렉토리, 기본값은 'data'
+            data_dir (str): 학습 데이터 디렉토리 경로, 기본값은 'data'
         """
         optimizer = optim.Adam(self.model.parameters(), lr=1e-4)
         criterion = nn.MSELoss()
