@@ -27,7 +27,7 @@ class Img2Story:
     def generate(self,
                  image_path: str,
                  prompt: str = 'USER: What is the overall mood of this image, and what story does it tell? ASSISTANT:',
-                 max_new_tokens: int = 512
+                 max_new_tokens: int = 50
                  ) -> str:
         """
         이미지 경로와 프롬프트를 사용하여 스토리를 생성
@@ -36,7 +36,7 @@ class Img2Story:
             image_path (str): 이미지 파일의 경로
             prompt (str): 생성할 스토리에 대한 프롬프트 텍스트
                           기본값은 'USER: What is the overall mood of this image, and what story does it tell? ASSISTANT:'
-            max_new_tokens (int): 생성할 최대 토큰 수, 기본값은 512
+            max_new_tokens (int): 생성할 최대 토큰 수, 기본값은 50
             
         Returns:
             str: 생성된 스토리 텍스트
@@ -76,8 +76,12 @@ if __name__ == '__main__':
             user_input = input('Enter image path: ')
             if user_input.lower() == 'exit':
                 break
+            
+            try:
+                generated_text = img2story.generate(user_input)
+            except Exception as e:
+                continue
 
-            generated_text = img2story.generate(user_input)
             print(f'Generated text: {generated_text}')
     except KeyboardInterrupt:
         print('\nTraining interrupted by user.')
