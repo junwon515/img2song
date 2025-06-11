@@ -1,7 +1,6 @@
 from transformers import LlavaForConditionalGeneration, LlavaProcessor
 from PIL import Image
 import torch
-import os
 
 
 class Img2Story:
@@ -25,15 +24,16 @@ class Img2Story:
         )
 
     def generate(self,
-                 image_path: str,
+                 image: Image.Image | str,
                  prompt: str = 'USER: What is the overall mood of this image, and what story does it tell? ASSISTANT:',
-                 max_new_tokens: int = 50
+                 max_new_tokens: int = 100
                  ) -> str:
         """
         이미지 경로와 프롬프트를 사용하여 스토리를 생성
 
         Args:
-            image_path (str): 이미지 파일의 경로
+            image (Image.Image | str): PIL 이미지 객체 또는 이미지 파일 경로
+                                      (이미지 파일 경로는 문자열로 제공)
             prompt (str): 생성할 스토리에 대한 프롬프트 텍스트
                           기본값은 'USER: What is the overall mood of this image, and what story does it tell? ASSISTANT:'
             max_new_tokens (int): 생성할 최대 토큰 수, 기본값은 50
@@ -41,13 +41,13 @@ class Img2Story:
         Returns:
             str: 생성된 스토리 텍스트
         """
-        if not os.path.exists(image_path):
-            raise FileNotFoundError(f'Image file does not exist at path: {image_path}')
-
         try:
-            image = Image.open(image_path).convert('RGB')
+            if isinstance(image, str):
+                image = Image.open(image).convert('RGB')
+            elif not isinstance(image, Image.Image):
+                raise ValueError('Image must be a PIL Image or a valid image file path.')
         except Exception as e:
-            raise ValueError(f'Error opening image: {e}')
+            raise ValueError(f'Error loading image: {e}')
 
         formatted_prompt = f'{prompt}\n<image>'
         inputs = self.processor(text=formatted_prompt, images=image, return_tensors='pt')
@@ -67,11 +67,11 @@ class Img2Story:
             generated_response = decoded_text
 
         return generated_response
-    
+
+
 if __name__ == '__main__':
     try:
-        from util import get_device
-        img2story = Img2Story(device=get_device())
+        img2story = Img2Story(device='cuda' if torch.cuda.is_available() else 'cpu')
         while True:
             user_input = input('Enter image path: ')
             if user_input.lower() == 'exit':

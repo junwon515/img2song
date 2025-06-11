@@ -10,6 +10,7 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
+
 class Img2MelNet(nn.Module):
     def __init__(self):
         """
@@ -59,6 +60,7 @@ class Img2MelNet(nn.Module):
         z = self.encoder(x)
         return self.decoder(z)
     
+
 class Img2Mel:
     def __init__(self, model_path='img2mel.pth', device='cpu'):
         """
@@ -202,11 +204,11 @@ class Img2Mel:
         mel_tensor = torch.tensor(mel_db).unsqueeze(0).unsqueeze(0)  # [1,1,128,time]
         mel_resized = F.interpolate(mel_tensor, size=(224, 224), mode='bilinear', align_corners=False)
         return mel_resized.squeeze(0)  # [1, 224, 224]
-    
+
+
 if __name__ == '__main__':
     try:
-        from util import get_device
-        img2mel = Img2Mel(device=get_device())
+        img2mel = Img2Mel(device='cuda' if torch.cuda.is_available() else 'cpu')
         # img2mel.train()
         user_input = input('Enter image path: ')
         img2mel.generate(user_input)
