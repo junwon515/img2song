@@ -4,7 +4,7 @@ import torch
 from typing import List
 
 
-def _load_json(file_path: str) -> List[dict]:
+def load_json(file_path: str) -> List[dict]:
     """
     JSON 파일을 로드하여 리스트로 반환
 
@@ -25,7 +25,7 @@ def _load_json(file_path: str) -> List[dict]:
             return []
         
 
-def _save_json(data: List[dict], file_path: str) -> None:
+def save_json(data: List[dict], file_path: str) -> None:
     """
     리스트 데이터를 JSON 파일로 저장
 

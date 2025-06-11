@@ -36,7 +36,7 @@ class Img2Story:
                                       (이미지 파일 경로는 문자열로 제공)
             prompt (str): 생성할 스토리에 대한 프롬프트 텍스트
                           기본값은 'USER: What is the overall mood of this image, and what story does it tell? ASSISTANT:'
-            max_new_tokens (int): 생성할 최대 토큰 수, 기본값은 50
+            max_new_tokens (int): 생성할 최대 토큰 수, 기본값은 100
             
         Returns:
             str: 생성된 스토리 텍스트

@@ -6,7 +6,7 @@ import webvtt
 import yt_dlp
 import tqdm
 
-from util import _load_json, _save_json
+from util import load_json, save_json
 
 
 def _clean_text(text: str) -> str:
@@ -106,7 +106,7 @@ def fetch_youtube_metadata(url: str, metadata_file: str = 'metadata.json') -> No
         'outtmpl': os.path.join(tempfile.gettempdir(), '%(id)s.%(ext)s'),
     }
 
-    metadata: List[dict] = _load_json(metadata_file)
+    metadata: List[dict] = load_json(metadata_file)
     existing_video_ids = {item['id'] for item in metadata if 'id' in item}
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -150,7 +150,7 @@ def fetch_youtube_metadata(url: str, metadata_file: str = 'metadata.json') -> No
                 'story': '',
                 'summary': [],
             })
-            _save_json(metadata, metadata_file)
+            save_json(metadata, metadata_file)
 
 
 if __name__ == '__main__':

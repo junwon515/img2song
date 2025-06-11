@@ -3,7 +3,7 @@ import tqdm
 from PIL import Image
 from io import BytesIO
 
-from util import _load_json, _save_json
+from util import load_json, save_json, get_device
 from model.img2story import Img2Story
 
 
@@ -14,8 +14,8 @@ def preprocess_metadata(metadata_file: str = 'metadata.json') -> None:
     Args:
         metadata_file (str): 메타데이터 JSON 파일 경로
     """
-    metadata = _load_json(metadata_file)
-    img2story = Img2Story()
+    metadata = load_json(metadata_file)
+    img2story = Img2Story(device=get_device())
 
     for item in tqdm.tqdm(metadata, desc='Preprocessing metadata'):
         if item['story'] or item['found_lyrics']:
@@ -27,7 +27,7 @@ def preprocess_metadata(metadata_file: str = 'metadata.json') -> None:
             response.raise_for_status()
             image = Image.open(BytesIO(response.content)).convert('RGB')
             item['story'] = img2story.generate(image=image)
-            _save_json(metadata, metadata_file)
+            save_json(metadata, metadata_file)
         except requests.RequestException as e:
             print(f'Error downloading image for video {item["id"]}: {e}')
         except Exception as e:
