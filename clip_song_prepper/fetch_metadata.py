@@ -22,17 +22,28 @@ def _clean_text(text: str) -> str:
     """
     cleaned_text = text.replace('&nbsp;', '') \
                          .replace('\u200b', ' ') \
-                         .replace('“', '"').replace('”', '"') \
-                         .replace('‘', "'").replace('’', "'") \
-                         .replace('.', '')
-    lang_pattern = re.compile(
-        r'[\uac00-\ud7a3\u1100-\u11FF\u3130-\u318F'  # 한글
-        r'\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]'   # 일본어 (히라가나, 가타카나, CJK 통합 한자)
-    )
-    cleaned_text = lang_pattern.sub('', cleaned_text)
-    cleaned_text = re.sub(r'\[.*?\]', '', cleaned_text)
+                         .replace('‘', "'").replace('’', "'")
+    allowed_pattern = r"[^a-zA-Z0-9\s'\-–—….,!?~\[\]\(\)]"
+    cleaned_text = re.sub(allowed_pattern, '', cleaned_text)
     cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
     return cleaned_text.strip()
+
+
+def _remove_bracketed_captions(text: str) -> str:
+    """
+    대괄호로 둘러싸인 캡션을 제거하고 슬래시로 구분된 문자열을 반환
+
+    Args:
+        text (str): 대괄호로 둘러싸인 캡션이 포함된 문자열
+
+    Returns:
+        str: 슬래시로 구분된 문자열
+    """
+    def replacer(match):
+        content = match.group(1)
+        filtered = ''.join(ch for ch in content if ch == '/')
+        return filtered
+    return re.sub(r'\[(.*?)\]', replacer, text)
 
 
 def get_youtube_english_lyrics(video_id: str) -> Tuple[List[str], bool]:
@@ -62,6 +73,7 @@ def get_youtube_english_lyrics(video_id: str) -> Tuple[List[str], bool]:
         else:
             return [], False
 
+        cleaned_lines = []
         last_cleaned_line = ''
         for caption in captions:
             if not caption.text.strip():
@@ -73,9 +85,11 @@ def get_youtube_english_lyrics(video_id: str) -> Tuple[List[str], bool]:
                     continue
                 if cleaned_line == last_cleaned_line: 
                     continue
-                lyrics.append(cleaned_line)
+                cleaned_lines.append(cleaned_line)
                 last_cleaned_line = cleaned_line
 
+        lyrics = _remove_bracketed_captions('/'.join(cleaned_lines)).split('/')
+        lyrics = [lyric.strip() for lyric in lyrics if lyric.strip()]
         found_lyrics = bool(lyrics)
 
     except Exception as e:
@@ -100,6 +114,7 @@ def fetch_youtube_metadata(url: str) -> None:
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
+        'ignoreerrors': True,
         'skip_download': True,
         'writesubtitles': True,
         'writeautomaticsub': True,
@@ -157,6 +172,6 @@ def fetch_youtube_metadata(url: str) -> None:
 if __name__ == '__main__':
     urls = load_json(YOUTUBE_URLS_PATH)
     for url in urls:
-        print(f'\n--- Starting processing for {url} ---')
-        fetch_youtube_metadata(url)
-        print(f'--- Finished processing {url} ---\n')
+        print(f'\n--- Starting processing for {url["title"]} ---')
+        fetch_youtube_metadata(url['url'])
+        print(f'--- Finished processing {url["title"]} ---\n')

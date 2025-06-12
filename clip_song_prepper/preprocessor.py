@@ -1,17 +1,30 @@
+import re
 import requests
 import tqdm
 
-from core.utils import load_json, save_json, load_image_from_source
+from core.utils import load_json, save_json
 from core.config import METADATA_PATH
 from clip_song_prepper.image_captioner import ImageCaptioner
 
 
-def preprocess_metadata() -> None:
-    """
-    메타데이터 파일을 로드하고 LlaVA 모델을 사용하여 스토리 생성
-    """
+def preprocess_title(title):
+    allowed_pattern = r'[^a-zA-Z0-9\s.]'
+    cleaned_title = re.sub(allowed_pattern, '', title)
+    cleaned_title = re.sub(r'\s+', ' ', cleaned_title)
+    return cleaned_title.strip()
+
+
+def preprocess_lyrics(lyrics):
+    pass
+
+
+def preprocess_story(story):
+    pass
+
+
+def caption_images():
     metadata = load_json(METADATA_PATH)
-    img2story = ImageCaptioner()
+    captioner = ImageCaptioner()
 
     for item in tqdm.tqdm(metadata, desc='Preprocessing metadata'):
         if item['story'] or item['found_lyrics']:
@@ -19,16 +32,16 @@ def preprocess_metadata() -> None:
 
         try:
             thumbnail_url = item['thumbnail']
-            image = load_image_from_source(thumbnail_url)
-            item['story'] = img2story.generate(image=image)
+            item['story'] = captioner.generate(image_source=thumbnail_url)
             save_json(metadata, METADATA_PATH)
         except requests.RequestException as e:
             print(f'Error downloading image for video {item["id"]}: {e}')
         except Exception as e:
             print(f'Error processing video {item["id"]}: {e}')
 
+def preprocess():
+    pass
 
 if __name__ == '__main__':
-    print('Preprocessing metadata...')
-    preprocess_metadata()
-    print('Preprocessing complete.')
+    caption_images()
+    print('Image captioning completed')
