@@ -6,7 +6,8 @@ import webvtt
 import yt_dlp
 import tqdm
 
-from util import load_json, save_json
+from core.utils import load_json, save_json
+from core.config import METADATA_PATH, YOUTUBE_URLS_PATH
 
 
 def _clean_text(text: str) -> str:
@@ -88,7 +89,7 @@ def get_youtube_english_lyrics(video_id: str) -> Tuple[List[str], bool]:
     return lyrics, found_lyrics
 
 
-def fetch_youtube_metadata(url: str, metadata_file: str = 'metadata.json') -> None:
+def fetch_youtube_metadata(url: str) -> None:
     """
     YouTube 비디오 또는 플레이리스트의 메타데이터를 가져오고 저장
 
@@ -106,7 +107,7 @@ def fetch_youtube_metadata(url: str, metadata_file: str = 'metadata.json') -> No
         'outtmpl': os.path.join(tempfile.gettempdir(), '%(id)s.%(ext)s'),
     }
 
-    metadata: List[dict] = load_json(metadata_file)
+    metadata: List[dict] = load_json(METADATA_PATH)
     existing_video_ids = {item['id'] for item in metadata if 'id' in item}
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -150,14 +151,11 @@ def fetch_youtube_metadata(url: str, metadata_file: str = 'metadata.json') -> No
                 'story': '',
                 'summary': [],
             })
-            save_json(metadata, metadata_file)
+            save_json(metadata, METADATA_PATH)
 
 
 if __name__ == '__main__':
-    urls = [
-        'https://www.youtube.com/playlist?list=PL4fGSI1pDJn6jXS_Tv_N9B8Z0HTRVJE0m', # Korean Top 100 Playlist
-    ]
-
+    urls = load_json(YOUTUBE_URLS_PATH)
     for url in urls:
         print(f'\n--- Starting processing for {url} ---')
         fetch_youtube_metadata(url)
