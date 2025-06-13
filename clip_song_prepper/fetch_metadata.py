@@ -22,8 +22,9 @@ def _clean_text(text: str) -> str:
     """
     cleaned_text = text.replace('&nbsp;', '') \
                          .replace('\u200b', ' ') \
+                         .replace('“', '"').replace('”', '"') \
                          .replace('‘', "'").replace('’', "'")
-    allowed_pattern = r"[^a-zA-Z0-9\s'\-–—….,!?~\[\]\(\)]"
+    allowed_pattern = r"[^a-zA-Z0-9\s'\"\-–—….,!?~\[\]\(\)]"
     cleaned_text = re.sub(allowed_pattern, '', cleaned_text)
     cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
     return cleaned_text.strip()

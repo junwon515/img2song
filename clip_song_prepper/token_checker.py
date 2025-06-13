@@ -12,5 +12,5 @@ class TokenChecker:
         tokens = self.tokenizer(text, truncation=False, add_special_tokens=True)
         return len(tokens['input_ids'])
 
-    def is_within_limit(self, text: str) -> bool:
+    def check(self, text: str) -> bool:
         return self.check_token_length(text) <= self.max_length
