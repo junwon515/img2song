@@ -112,5 +112,10 @@ def preprocess():
         item['summary'] = temp_list
         save_json(metadata, METADATA_PATH)
 
+
 if __name__ == '__main__':
-    preprocess()
+    user_input = input('>> ').strip().lower()
+    if user_input == 'caption':
+        caption_images()
+    elif user_input == 'preprocess':
+        preprocess()

@@ -42,6 +42,7 @@ def load_image_from_source(image_source: str) -> Image.Image:
     else:
         raise ValueError(f'Invalid image source: {image_source}. Must be a valid URL or file path.')
 
+
 def load_json(file_path: str) -> List[dict]:
     """
     JSON 파일을 로드하여 리스트로 반환

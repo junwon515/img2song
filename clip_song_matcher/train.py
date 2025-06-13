@@ -49,3 +49,8 @@ def train():
         'proj_img': proj_img.state_dict(),
         'proj_txt': proj_txt.state_dict()
     }, proj_name)
+
+
+if __name__ == '__main__':
+    train()
+    print('Training complete. Projection heads saved.')

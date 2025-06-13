@@ -58,3 +58,25 @@ class MusicRecommender:
         top_indices = torch.topk(sims, top_k).indices
 
         return [(self.ids[i], self.urls[i], sims[i].item()) for i in top_indices]
+
+
+if __name__ == '__main__':
+    recommender = MusicRecommender()
+    while True:
+        user_input = input('>> ').split()
+        if user_input[0].lower() == 'exit':
+            break
+        
+        try:
+            top_k = int(user_input[1]) if len(user_input) > 1 else 5
+            if top_k <= 0:
+                raise ValueError('Top K must be a positive integer.')
+            recommendations = recommender.recommend(user_input[0], top_k=top_k)
+            
+            print(f'Top {top_k} recommendations:')
+            for rec in recommendations:
+                print(f'ID: {rec[0]}, URL: {rec[1]}, Similarity: {rec[2]:.4f}')
+
+        except Exception as e:
+            print(f'Error: {e}')
+            continue
