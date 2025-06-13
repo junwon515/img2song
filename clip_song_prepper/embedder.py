@@ -8,7 +8,7 @@ from core.config import DEVICE, CLIP_MODEL_NAME, METADATA_PATH, NPZ_PATH
 
 
 def generate_embeddings():
-    model = CLIPModel.from_pretrained(CLIP_MODEL_NAME).eval().to(CLIP_MODEL_NAME)
+    model = CLIPModel.from_pretrained(CLIP_MODEL_NAME).eval().to(DEVICE)
     processor = CLIPProcessor.from_pretrained(CLIP_MODEL_NAME)
 
     metadata = load_json(METADATA_PATH)
@@ -22,12 +22,14 @@ def generate_embeddings():
             print(f'Error loading image from {entry.get("thumbnail")}: {e}')
             continue
 
-        text = '. '.join(entry.get('summary', []))
-        inputs = processor(images=image, text=[text], return_tensors='pt', truncation=True).to(DEVICE)
+        text = ' '.join(entry.get('summary', []))
+        image_inputs = processor(images=image, return_tensors='pt').to(DEVICE)
+        text_inputs = processor(text=[text], return_tensors='pt', truncation=True).to(DEVICE)
+
 
         with torch.no_grad():
-            img_emb = model.get_image_features(**inputs)
-            txt_emb = model.get_text_features(**inputs)
+            img_emb = model.get_image_features(**image_inputs)
+            txt_emb = model.get_text_features(**text_inputs)
 
         img_emb = img_emb / img_emb.norm(p=2, dim=-1, keepdim=True)
         txt_emb = txt_emb / txt_emb.norm(p=2, dim=-1, keepdim=True)
