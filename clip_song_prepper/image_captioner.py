@@ -38,7 +38,7 @@ class ImageCaptioner:
 
         formatted_prompt = f'{prompt}\n<image>'
         inputs = self.processor(text=formatted_prompt, images=image, return_tensors='pt')
-        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+        inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
 
         with torch.no_grad():
             output_ids = self.model.generate(
