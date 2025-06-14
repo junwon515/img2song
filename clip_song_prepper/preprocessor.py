@@ -50,7 +50,7 @@ def preprocess_lyrics(checker: TokenChecker, title: str, lyrics: List[str]) -> L
     unique_parts = list(dict.fromkeys(parts))
     while not checker.check(f'{title}. {" ".join(unique_parts)}'):
         temp_parts = []
-        common_parts = [item for item, _ in parts_count.most_common(len(unique_parts)//2)]
+        common_parts = [item for item, _ in parts_count.most_common((len(unique_parts) * 2) // 3)]
         for part in unique_parts:
             if part in common_parts:
                 temp_parts.append(part)

@@ -66,6 +66,10 @@ def get_youtube_english_lyrics(video_id: str) -> Tuple[List[str], bool]:
         lyrics = [lyric.strip() for lyric in lyrics if lyric.strip()]
         found_lyrics = bool(lyrics)
 
+        if found_lyrics and len(' '.join(lyrics)) < 250:
+            lyrics = []
+            found_lyrics = False
+
     except Exception as e:
         print(f'Error processing lyrics for video {video_id}: {e}')
         lyrics = []
@@ -75,6 +79,35 @@ def get_youtube_english_lyrics(video_id: str) -> Tuple[List[str], bool]:
             os.remove(downloaded_subtitle_path)
 
     return lyrics, found_lyrics
+
+
+def remove_existing_metadata(url: str) -> bool:
+    ydl_flat_opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'ignoreerrors': True,
+        'extract_flat': True
+    }
+
+    metadata: List[dict] = load_json(METADATA_PATH)
+
+    with yt_dlp.YoutubeDL(ydl_flat_opts) as ydl_flat:
+        try:
+            info_dict = ydl_flat.extract_info(url, download=False)
+            entries = info_dict.get('entries', []) if 'entries' in info_dict else [info_dict]
+        except yt_dlp.utils.DownloadError as e:
+            print(f'Error fetching info for {url}: {e}')
+            return False
+
+        for entry in tqdm.tqdm(entries, desc=f'Removing existing metadata for {url}'):
+            if entry is None:
+                continue
+
+            video_id = entry.get('id')
+            metadata = [item for item in metadata if item.get('id') != video_id]
+    
+    save_json(metadata, METADATA_PATH)
+    return True
 
 
 def fetch_youtube_metadata(url: str) -> None:
@@ -89,18 +122,25 @@ def fetch_youtube_metadata(url: str) -> None:
         'outtmpl': os.path.join(tempfile.gettempdir(), '%(id)s.%(ext)s'),
     }
 
+    ydl_flat_opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'ignoreerrors': True,
+        'extract_flat': True
+    }
+
     metadata: List[dict] = load_json(METADATA_PATH)
     existing_video_ids = {item['id'] for item in metadata if 'id' in item}
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(ydl_flat_opts) as ydl_flat:
         try:
-            all_info = ydl.extract_info(url, download=False)
-            entries = all_info.get('entries', []) if 'entries' in all_info else [all_info]
+            info_dict = ydl_flat.extract_info(url, download=False)
+            entries = info_dict.get('entries', []) if 'entries' in info_dict else [info_dict]
         except yt_dlp.utils.DownloadError as e:
             print(f'Error fetching info for {url}: {e}')
             return
-
-        playlist_title = all_info.get('title', 'Unknown Playlist')
+        
+        playlist_title = info_dict.get('title', 'Unknown Playlist')[:50]
         print(f'{playlist_title} ({len(entries)} videos)')
 
         for entry in tqdm.tqdm(entries, desc=f'Processing videos from "{playlist_title}"'):
@@ -111,29 +151,29 @@ def fetch_youtube_metadata(url: str) -> None:
             if not video_id or video_id in existing_video_ids:
                 continue
 
-            title = entry.get('title')
-            webpage_url = entry.get('webpage_url')
-            thumbnail = entry.get('thumbnail')
-
             try:
-                ydl.download([webpage_url])
-            except yt_dlp.utils.DownloadError as e:
-                print(f'Error downloading video {video_id}: {e}')
-                continue
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(entry.get('url'))
 
-            lyrics, found_lyrics = get_youtube_english_lyrics(video_id)
+                    video_id = info.get('id')
+                    title = info.get('title')
+                    webpage_url = info.get('webpage_url')
+                    thumbnail = info.get('thumbnail')
+                    lyrics, found_lyrics = get_youtube_english_lyrics(video_id)
 
-            metadata.append({
-                'id': video_id,
-                'title': title,
-                'webpage_url': webpage_url,
-                'thumbnail': thumbnail,
-                'lyrics': lyrics,
-                'found_lyrics': found_lyrics,
-                'story': '',
-                'summary': [],
-            })
-            save_json(metadata, METADATA_PATH)
+                    metadata.append({
+                        'id': video_id,
+                        'title': title,
+                        'webpage_url': webpage_url,
+                        'thumbnail': thumbnail,
+                        'lyrics': lyrics,
+                        'found_lyrics': found_lyrics,
+                        'story': '',
+                        'summary': [],
+                    })
+                    save_json(metadata, METADATA_PATH)
+            except Exception as e:
+                print(f'Error processing video {video_id}: {e}')
 
 
 if __name__ == '__main__':

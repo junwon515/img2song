@@ -50,26 +50,29 @@ app.py                  # UI 실행용 streamlit 앱
 ### 유튜브 링크 추가 및 관리
 ```bash
 # YouTube 링크 추가
-python -m clip_song_prepper.main --step add --url "<YouTube URL>" --title "Lofi Beats"
+python -m clip_song_prepper.main add --url "<YouTube URL>" --title "Lofi Beats"
 
 # 링크 리스트 보기
-python -m clip_song_prepper.main --step list
+python -m clip_song_prepper.main list
+
+# 링크 찾기
+python -m clip_song_prepper.main find --id "<YouTube ID>"
 
 # 링크 삭제
-python -m clip_song_prepper.main --step remove --id "<YouTube ID>"
+python -m clip_song_prepper.main remove --id "<YouTube ID>"
 ```
 
 ### 전체 파이프라인 실행
 ```bash
 # 전체 실행
-python -m clip_song_prepper.main --step all
+python -m clip_song_prepper.main all
 
 # 개별 단계 실행도 가능
-python -m clip_song_prepper.main --step fetch       # YouTube 메타데이터 수집
-python -m clip_song_prepper.main --step fetch --url "<YouTube URL>" # 개별도 가능
-python -m clip_song_prepper.main --step caption     # 이미지 캡셔닝
-python -m clip_song_prepper.main --step preprocess  # 텍스트 전처리
-python -m clip_song_prepper.main --step embed       # CLIP 임베딩 생성
+python -m clip_song_prepper.main fetch       # YouTube 메타데이터 수집
+python -m clip_song_prepper.main fetch --url "<YouTube URL>" # 개별도 가능
+python -m clip_song_prepper.main caption     # 이미지 캡셔닝
+python -m clip_song_prepper.main preprocess  # 텍스트 전처리
+python -m clip_song_prepper.main embed       # CLIP 임베딩 생성
 ```
 
 ---
