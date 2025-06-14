@@ -1,7 +1,7 @@
 # 🎧 Img2Song
 
 멀티모달(이미지/텍스트) 입력으로 음악을 추천해주는 CLIP 기반 추천 시스템입니다.  
-썸네일 이미지나 텍스트(감정, 분위기, 가사 등)를 입력하면, 유사한 음악을 추천해줍니다.
+이미지나 텍스트(감정, 분위기, 가사 등)를 입력하면, 유사한 음악을 추천해줍니다.
 
 ---
 
@@ -129,8 +129,10 @@ streamlit run app.py
 
 ## 📚 기술 스택
 
-- **CLIP** (OpenAI)
+- **Multimodal Vision-Language Model**
+  - CLIP (OpenAI)
+  - LLaVA (Meta)
 - **PyTorch** / **HuggingFace Transformers**
 - **YouTube Metadata** (`yt_dlp`)
 - **Streamlit** (UI)
-- **spaCy**, **T5 Summarization**, **Google Translate API**
+- **Google Translate API**
