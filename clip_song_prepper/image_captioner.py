@@ -37,8 +37,8 @@ class ImageCaptioner:
         decoded_text = self.processor.tokenizer.decode(output_ids[0], skip_special_tokens=True)
         generated_response = decoded_text.split('ASSISTANT:')[-1].strip()
 
-        if '변역결과' in generated_response:
-            title, text = generated_response.split('변역결과')
+        if '번역결과' in generated_response:
+            title, text = generated_response.split('번역결과')
             generated_response = title + translate_to_english(text.strip())
 
         return generated_response
