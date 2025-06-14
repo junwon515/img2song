@@ -12,14 +12,14 @@ from core.config import YOUTUBE_URLS_PATH
 def main(args):
     if args.step == 'add':
         if not args.url:
-            print("You must provide a URL with --url to add.")
+            print('You must provide a URL with --url to add.')
             return
         add_youtube_entry(args.url, args.title, args.description)
         return
 
     if args.step == 'remove':
         if not args.id:
-            print("You must provide an ID with --id to remove.")
+            print('You must provide an ID with --id to remove.')
             return
         remove_youtube_entry(args.id)
         return
@@ -29,7 +29,7 @@ def main(args):
         return
 
     if args.step in ('all', 'fetch'):
-        print('\n=== [1] Fetching YouTube Metadata ===')
+        print('\n=== Fetching YouTube Metadata ===')
 
         if args.url:
             print(f'[Fetch] Fetching metadata for provided URL: {args.url}')
@@ -45,15 +45,15 @@ def main(args):
                 print(f'--- Done: {entry.get("title", "")} ---')
 
     if args.step in ('all', 'caption'):
-        print('\n=== [2] Generating Image Captions ===')
+        print('\n=== Generating Image Captions ===')
         caption_images()
 
     if args.step in ('all', 'preprocess'):
-        print('\n=== [3] Preprocessing Text (Lyrics or Captions) ===')
+        print('\n=== Preprocessing Text (Lyrics or Captions) ===')
         preprocess()
 
     if args.step in ('all', 'embed'):
-        print('\n=== [4] Generating CLIP Embeddings ===')
+        print('\n=== Generating CLIP Embeddings ===')
         generate_embeddings()
 
     print('\nPipeline completed.')
