@@ -1,10 +1,11 @@
 import os
 import json
 import requests
-from typing import List
+from typing import List, Tuple
 from io import BytesIO
 from PIL import Image
 from googletrans import Translator
+import numpy as np
 
 
 translator = Translator()
@@ -18,8 +19,14 @@ def translate_to_english(text: str) -> str:
         return text
 
 
-def load_image_from_source(image_source: str) -> Image.Image:
+def load_image_from_source(image_source: str | Image.Image | BytesIO) -> Image.Image:
     try:
+        if isinstance(image_source, Image.Image):
+            return image_source.convert('RGB')
+        
+        if isinstance(image_source, BytesIO):
+            return Image.open(image_source).convert('RGB')
+
         if image_source.startswith(('http://', 'https://')):
             response = requests.get(image_source)
             response.raise_for_status()
@@ -34,6 +41,35 @@ def load_image_from_source(image_source: str) -> Image.Image:
         raise ValueError(f'Error loading image from URL: {e}')
     except (FileNotFoundError, Image.UnidentifiedImageError) as e:
         raise ValueError(f'Error loading image from file: {e}')
+
+
+def load_embeddings(npz_path: str) -> Tuple[List[np.ndarray], List[np.ndarray], List[str], List[str]]:
+    try:
+        npz = np.load(npz_path, allow_pickle=True)
+        image_embs = list(npz['image_embeddings'])
+        text_embs = list(npz['text_embeddings'])
+        ids = list(npz['ids'])
+        urls = list(npz['urls'])
+        return image_embs, text_embs, ids, urls
+    except FileNotFoundError:
+        return [], [], [], []
+
+
+def save_embeddings(npz_path: str, 
+                    image_embeddings: List[np.ndarray], 
+                    text_embeddings: List[np.ndarray], 
+                    ids: List[str], 
+                    urls: List[str]) -> None:
+    try:
+        np.savez_compressed(
+            npz_path,
+            image_embeddings=np.stack(image_embeddings),
+            text_embeddings=np.stack(text_embeddings),
+            ids=np.array(ids),
+            urls=np.array(urls)
+        )
+    except IOError as e:
+        print(f'Error saving embeddings to {npz_path}: {e}')
 
 
 def load_json(file_path: str) -> List[dict]:

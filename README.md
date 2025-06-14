@@ -72,7 +72,7 @@ python -m clip_song_prepper.main fetch       # YouTube 메타데이터 수집
 python -m clip_song_prepper.main fetch --url "<YouTube URL>" # 개별도 가능
 python -m clip_song_prepper.main caption     # 이미지 캡셔닝
 python -m clip_song_prepper.main preprocess  # 텍스트 전처리
-python -m clip_song_prepper.main embed       # CLIP 임베딩 생성
+python -m clip_song_prepper.main embed       # CLIP 임베딩 사전 업데이트
 ```
 
 ---

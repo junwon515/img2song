@@ -2,9 +2,10 @@ import os
 import torch
 import torch.nn.functional as F
 from transformers import CLIPProcessor, CLIPModel
-import numpy as np
+from PIL import Image
+from io import BytesIO
 
-from core.utils import load_image_from_source, translate_to_english
+from core.utils import load_image_from_source, translate_to_english, load_embeddings
 from core.config import DEVICE, CLIP_MODEL_NAME, CHECKPOINTS_DIR, NPZ_PATH
 from clip_song_matcher.config import PROJ_HEADS_NAME
 from clip_song_matcher.model import ProjectionHead
@@ -19,16 +20,16 @@ class MusicRecommender:
         self.proj_txt = ProjectionHead().to(DEVICE)
         self._load_projection(CHECKPOINTS_DIR, PROJ_HEADS_NAME)
 
-        db = np.load(NPZ_PATH)
-        self.image_embs = torch.tensor(db['image_embeddings'], dtype=torch.float32).to(DEVICE)
-        self.text_embs = torch.tensor(db['text_embeddings'], dtype=torch.float32).to(DEVICE)
-        self.urls = db['urls']
-        self.ids = db['ids']
+        image_embs, text_embs, ids, urls = load_embeddings(NPZ_PATH)
+        self.image_embs = torch.tensor(image_embs, dtype=torch.float32).to(DEVICE)
+        self.text_embs = torch.tensor(text_embs, dtype=torch.float32).to(DEVICE)
+        self.urls = urls
+        self.ids = ids
 
         self.image_embs_proj = self.proj_img(self.image_embs)
         self.text_embs_proj = self.proj_txt(self.text_embs)
 
-    def _load_projection(self, dir: str, base_name: str):
+    def _load_projection(self, dir: str, base_name: str) -> None:
         matching_files = [
             os.path.join(dir, f) for f in os.listdir(dir)
             if f.startswith(base_name) and f.endswith('.pth')
@@ -43,7 +44,10 @@ class MusicRecommender:
         self.proj_img.load_state_dict(state['proj_img'])
         self.proj_txt.load_state_dict(state['proj_txt'])
 
-    def recommend_image(self, image_source: str, top_k: int = 5):
+    def recommend_image(self,
+                        image_source: str | Image.Image | BytesIO,
+                        top_k: int = 5
+                        ) -> list[tuple[str, str, float]]:
         image = load_image_from_source(image_source)
         inputs = self.processor(images=image, return_tensors='pt').to(DEVICE)
         img_emb = self.model.get_image_features(**inputs)
@@ -54,7 +58,7 @@ class MusicRecommender:
 
         return [(self.ids[i], self.urls[i], sims[i].item()) for i in top_indices]
     
-    def recommend_text(self, query_text: str, top_k: int = 5):
+    def recommend_text(self, query_text: str, top_k: int = 5) -> list[tuple[str, str, float]]:
         if not query_text.strip():
             raise ValueError('Query text cannot be empty.')
         

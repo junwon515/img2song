@@ -1,5 +1,7 @@
 from transformers import LlavaForConditionalGeneration, LlavaProcessor
 import torch
+from PIL import Image
+from io import BytesIO
 
 from core.utils import load_image_from_source, translate_to_english
 from core.config import DEVICE, CAPTIONER_MODEL_NAME
@@ -15,7 +17,7 @@ class ImageCaptioner:
         )
 
     def generate(self,
-                 image_source: str,
+                 image_source: str | Image.Image | BytesIO,
                  prompt: str = 'USER: What is the overall mood of this image, and what story does it tell? Please answer in English only! ASSISTANT:',
                  max_new_tokens: int = 100
                  ) -> str:
