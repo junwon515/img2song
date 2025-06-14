@@ -125,7 +125,7 @@ streamlit run app.py
 | 경로 | 설명 |
 |------|------|
 | `data/youtube_urls.json` | 수집 대상 YouTube 링크 목록 |
-| `data/metadata/` | 수집된 유튜브 메타데이터 (썸네일, 자막 등) |
+| `data/metadata.json` | 수집된 유튜브 메타데이터 (썸네일, 자막 등) |
 | `data/embeddings.npz` | 전처리된 CLIP 임베딩 |
 | `checkpoints/` | 학습된 projection head 보관 폴더 |
 
