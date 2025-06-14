@@ -1,7 +1,7 @@
 from transformers import LlavaForConditionalGeneration, LlavaProcessor
 import torch
 
-from core.utils import load_image_from_source
+from core.utils import load_image_from_source, translate_to_english
 from core.config import DEVICE, CAPTIONER_MODEL_NAME
 
 
@@ -36,5 +36,9 @@ class ImageCaptioner:
             
         decoded_text = self.processor.tokenizer.decode(output_ids[0], skip_special_tokens=True)
         generated_response = decoded_text.split('ASSISTANT:')[-1].strip()
+
+        if generated_response in '변역결과':
+            title, text = generated_response.split('변역결과')
+            generated_response = title + translate_to_english(text.strip())
 
         return generated_response
