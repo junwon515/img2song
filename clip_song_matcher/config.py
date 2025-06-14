@@ -1,5 +1,9 @@
+# 학습 설정
+INPUT_DIM = 512
 PROJ_DIM = 512
 BATCH_SIZE = 64
 EPOCHS = 10
 LEARNING_RATE = 1e-4
-PROJ_HEADS_PATH = 'checkpoints/clip_proj_heads_thumbnail_lyrics'
+
+# 프로젝션 헤드 이름
+PROJ_HEADS_NAME = 'clip_proj_heads_thumbnail_lyrics'

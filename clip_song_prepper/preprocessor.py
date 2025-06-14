@@ -76,6 +76,7 @@ def preprocess_story(checker: TokenChecker, title: str, story: str) -> List[str]
 
     return parts
 
+
 def caption_images():
     metadata = load_json(METADATA_PATH)
     captioner = ImageCaptioner()
@@ -92,6 +93,7 @@ def caption_images():
             print(f'Error downloading image for video {item["id"]}: {e}')
         except Exception as e:
             print(f'Error processing video {item["id"]}: {e}')
+
 
 def preprocess():
     metadata = load_json(METADATA_PATH)
@@ -110,12 +112,6 @@ def preprocess():
             temp_list.extend(preprocess_story(checker, cleaned_title, item['story']))
 
         item['summary'] = temp_list
-        save_json(metadata, METADATA_PATH)
 
-
-if __name__ == '__main__':
-    user_input = input('>> ').strip().lower()
-    if user_input == 'caption':
-        caption_images()
-    elif user_input == 'preprocess':
-        preprocess()
+    save_json(metadata, METADATA_PATH)
+    print('Preprocessing completed. Metadata saved.')

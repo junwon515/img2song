@@ -19,18 +19,6 @@ class ImageCaptioner:
                  prompt: str = 'USER: What is the overall mood of this image, and what story does it tell? Please answer in English only! ASSISTANT:',
                  max_new_tokens: int = 100
                  ) -> str:
-        """
-        이미지 경로와 프롬프트를 사용하여 스토리를 생성
-
-        Args:
-            image_source (str): 이미지 파일 경로 또는 URL
-            prompt (str): 생성할 스토리에 대한 프롬프트 텍스트
-                          기본값은 'USER: What is the overall mood of this image, and what story does it tell? Please answer in English only! ASSISTANT:'
-            max_new_tokens (int): 생성할 최대 토큰 수, 기본값은 100
-            
-        Returns:
-            str: 생성된 스토리 텍스트
-        """
         try:
             image = load_image_from_source(image_source)
         except Exception as e:

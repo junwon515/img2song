@@ -11,15 +11,6 @@ from core.config import METADATA_PATH, YOUTUBE_URLS_PATH
 
 
 def _clean_text(text: str) -> str:
-    """
-    주어진 텍스트를 정제하여 불필요한 문자 제거
-
-    Args:
-        text (str): 정제할 텍스트
-
-    Returns:
-        str: 정제된 텍스트
-    """
     cleaned_text = text.replace('&nbsp;', '') \
                          .replace('\u200b', ' ') \
                          .replace('“', '"').replace('”', '"') \
@@ -31,15 +22,6 @@ def _clean_text(text: str) -> str:
 
 
 def _remove_bracketed_captions(text: str) -> str:
-    """
-    대괄호로 둘러싸인 캡션을 제거하고 슬래시로 구분된 문자열을 반환
-
-    Args:
-        text (str): 대괄호로 둘러싸인 캡션이 포함된 문자열
-
-    Returns:
-        str: 슬래시로 구분된 문자열
-    """
     def replacer(match):
         content = match.group(1)
         filtered = ''.join(ch for ch in content if ch == '/')
@@ -48,15 +30,6 @@ def _remove_bracketed_captions(text: str) -> str:
 
 
 def get_youtube_english_lyrics(video_id: str) -> Tuple[List[str], bool]:
-    """
-    YouTube 비디오의 영어 가사를 가져오고 정제 및 반환
-
-    Args:
-        video_id (str): YouTube 비디오 ID
-
-    Returns:
-        Tuple[List[str], bool]: 정제된 가사 리스트와 가사가 발견되었는지 여부
-    """
     lyrics: List[str] = []
     found_lyrics = False
     downloaded_subtitle_path = ''
@@ -105,13 +78,6 @@ def get_youtube_english_lyrics(video_id: str) -> Tuple[List[str], bool]:
 
 
 def fetch_youtube_metadata(url: str) -> None:
-    """
-    YouTube 비디오 또는 플레이리스트의 메타데이터를 가져오고 저장
-
-    Args:
-        url (str): YouTube URL (플레이리스트 또는 비디오)
-        metadata_file (str): 메타데이터를 저장할 JSON 파일 경로
-    """
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,

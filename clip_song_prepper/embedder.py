@@ -16,6 +16,9 @@ def generate_embeddings():
     ids, urls, image_embs, text_embs = [], [], [], []
 
     for entry in tqdm(metadata):
+        if not entry.get('summary'):
+            continue
+        
         try:
             image = load_image_from_source(entry['thumbnail'])
         except Exception as e:
