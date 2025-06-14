@@ -22,10 +22,14 @@
 git clone https://github.com/junwon515/img2song.git
 cd img2song
 
-# 가상환경 및 의존성 설치
+# 가상환경 생성
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
+
+# 의존성 설치
+pip install yt_dlp pillow librosa webvtt-py tqdm streamlit
+pip install transformers accelerate bitsandbytes
+pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu126
 ```
 
 ---
