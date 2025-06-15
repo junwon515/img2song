@@ -129,23 +129,27 @@ def update_metadata(url: str = None) -> None:
         urls = [data['url'] for data in load_json(YOUTUBE_URLS_PATH)]
     else:
         urls = [url]
-    total_entries: List[dict] = []
+
+    seen_ids = set()
+    entries: List[dict] = []
     for u in tqdm.tqdm(urls, desc='Fetching metadata from URLs'):
         with yt_dlp.YoutubeDL(ydl_flat_opts) as ydl_flat:
             try:
                 info_dict = ydl_flat.extract_info(u, download=False)
-                entries = info_dict.get('entries', []) if 'entries' in info_dict else [info_dict]
-                total_entries.extend(entries)
+                current_entries = info_dict.get('entries', [info_dict])
+                current_entries = [entry for entry in current_entries if entry.get('id') not in seen_ids]
+                seen_ids.update(entry.get('id') for entry in current_entries if entry.get('id'))
+                entries.extend(current_entries)
             except yt_dlp.utils.DownloadError as e:
                 print(f'Error fetching info for {u}: {e}')
-      
+
 
     metadata = load_json(METADATA_PATH)
     existing_data = {item['id']: item for item in metadata if 'id' in item}
     existing_ids = set(existing_data.keys())
 
     new_metadata: List[dict] = [] if url is None else metadata.copy()
-    for entry in tqdm.tqdm(total_entries, desc='Updating metadata'):
+    for entry in tqdm.tqdm(entries, desc='Updating metadata'):
         if entry is None:
             continue
 
