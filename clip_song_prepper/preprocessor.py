@@ -1,8 +1,8 @@
 import re
 import requests
 import tqdm
-from typing import List
 from collections import Counter
+from typing import List
 
 from core.utils import load_json, save_json
 from core.config import METADATA_PATH
@@ -100,7 +100,9 @@ def preprocess():
     checker = TokenChecker()
 
     for item in tqdm.tqdm(metadata, desc='Preprocessing metadata'):
-        if item['summary'] or not (item['found_lyrics'] or item['story']):
+        if item['summary']:
+            continue
+        if not item['found_lyrics'] and not item['story']:
             continue
 
         temp_list: List[str] = []
@@ -114,4 +116,3 @@ def preprocess():
         item['summary'] = temp_list
 
     save_json(metadata, METADATA_PATH)
-    print('Preprocessing completed. Metadata saved.')

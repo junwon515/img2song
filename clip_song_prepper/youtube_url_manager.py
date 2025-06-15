@@ -56,11 +56,3 @@ def list_youtube_entries():
         return
     for entry in data:
         print(json.dumps(entry, indent=2, ensure_ascii=False))
-
-
-def find_youtube_entry(yt_id: str) -> Optional[dict]:
-    data = load_json(YOUTUBE_URLS_PATH)
-    for entry in data:
-        if entry['id'] == yt_id:
-            return entry
-    return None

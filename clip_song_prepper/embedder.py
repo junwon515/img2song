@@ -1,13 +1,12 @@
-import numpy as np
-from tqdm import tqdm
 from transformers import CLIPProcessor, CLIPModel
 import torch
+from tqdm import tqdm
 
 from core.utils import load_json, load_image_from_source, load_embeddings, save_embeddings
 from core.config import DEVICE, CLIP_MODEL_NAME, METADATA_PATH, NPZ_PATH
 
 
-def generate_embeddings():
+def update_embeddings():
     model = CLIPModel.from_pretrained(CLIP_MODEL_NAME).eval().to(DEVICE)
     processor = CLIPProcessor.from_pretrained(CLIP_MODEL_NAME)
 
@@ -23,12 +22,10 @@ def generate_embeddings():
     existing_ids = set(existing_data.keys()) if existing_data else set()
 
     metadata = load_json(METADATA_PATH)
-    metadata_ids = set()
     new_data = {}
 
     for entry in tqdm(metadata):
         entry_id = entry.get('id')
-        metadata_ids.add(entry_id)
 
         if entry_id in existing_ids:
             new_data[entry_id] = existing_data[entry_id]
@@ -36,8 +33,6 @@ def generate_embeddings():
 
         if not entry.get('summary'):
             continue
-
-        print(f'Processing entry {entry_id}...')
         
         try:
             image = load_image_from_source(entry['thumbnail'])
@@ -63,18 +58,14 @@ def generate_embeddings():
             'url': entry.get('webpage_url')
         }
 
-    filtered_data = {
-        id_: data for id_, data in new_data.items() if id_ in metadata_ids
-    }
-
     save_embeddings(
         NPZ_PATH,
-        [data['image_embedding'] for data in filtered_data.values()],
-        [data['text_embedding'] for data in filtered_data.values()],
-        list(filtered_data.keys()),
-        [data['url'] for data in filtered_data.values()]
+        [data['image_embedding'] for data in new_data.values()],
+        [data['text_embedding'] for data in new_data.values()],
+        list(new_data.keys()),
+        [data['url'] for data in new_data.values()]
     )
 
 
 if __name__ == '__main__':
-    generate_embeddings()
+    update_embeddings()

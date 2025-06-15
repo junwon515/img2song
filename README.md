@@ -55,9 +55,6 @@ python -m clip_song_prepper.main add --url "<YouTube URL>" --title "Lofi Beats"
 # 링크 리스트 보기
 python -m clip_song_prepper.main list
 
-# 링크 찾기
-python -m clip_song_prepper.main find --id "<YouTube ID>"
-
 # 링크 삭제
 python -m clip_song_prepper.main remove --id "<YouTube ID>"
 ```
@@ -65,14 +62,17 @@ python -m clip_song_prepper.main remove --id "<YouTube ID>"
 ### 전체 파이프라인 실행
 ```bash
 # 전체 실행
-python -m clip_song_prepper.main all
+python -m clip_song_prepper.main update --all
+
+# 메타데이터 및 사전 업데이트
+python -m clip_song_prepper.main update
 
 # 개별 단계 실행도 가능
-python -m clip_song_prepper.main fetch       # YouTube 메타데이터 수집
-python -m clip_song_prepper.main fetch --url "<YouTube URL>" # 개별도 가능
-python -m clip_song_prepper.main caption     # 이미지 캡셔닝
-python -m clip_song_prepper.main preprocess  # 텍스트 전처리
-python -m clip_song_prepper.main embed       # CLIP 임베딩 사전 업데이트
+python -m clip_song_prepper.main update --fetch       # YouTube 메타데이터 수집 업데이트
+python -m clip_song_prepper.main update --fetch --url "<YouTube URL>" # 개별도 수집
+python -m clip_song_prepper.main update --caption     # 이미지 캡셔닝
+python -m clip_song_prepper.main update --preprocess  # 텍스트 전처리
+python -m clip_song_prepper.main update --embed       # CLIP 임베딩 사전 업데이트
 ```
 
 ---

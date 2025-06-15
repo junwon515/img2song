@@ -2,8 +2,8 @@ import os
 import re
 import tempfile
 from typing import List, Tuple
-import webvtt
 import yt_dlp
+import webvtt
 import tqdm
 
 from core.utils import load_json, save_json
@@ -81,36 +81,7 @@ def get_youtube_english_lyrics(video_id: str) -> Tuple[List[str], bool]:
     return lyrics, found_lyrics
 
 
-def remove_existing_metadata(url: str) -> bool:
-    ydl_flat_opts = {
-        'quiet': True,
-        'no_warnings': True,
-        'ignoreerrors': True,
-        'extract_flat': True
-    }
-
-    metadata: List[dict] = load_json(METADATA_PATH)
-
-    with yt_dlp.YoutubeDL(ydl_flat_opts) as ydl_flat:
-        try:
-            info_dict = ydl_flat.extract_info(url, download=False)
-            entries = info_dict.get('entries', []) if 'entries' in info_dict else [info_dict]
-        except yt_dlp.utils.DownloadError as e:
-            print(f'Error fetching info for {url}: {e}')
-            return False
-
-        for entry in tqdm.tqdm(entries, desc=f'Removing existing metadata for {url}'):
-            if entry is None:
-                continue
-
-            video_id = entry.get('id')
-            metadata = [item for item in metadata if item.get('id') != video_id]
-    
-    save_json(metadata, METADATA_PATH)
-    return True
-
-
-def fetch_youtube_metadata(url: str) -> None:
+def fetch_metatadata(url: str) -> dict:
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
@@ -121,7 +92,32 @@ def fetch_youtube_metadata(url: str) -> None:
         'subtitleslangs': ['en'],
         'outtmpl': os.path.join(tempfile.gettempdir(), '%(id)s.%(ext)s'),
     }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url)
 
+            if info is None:
+                return None
+
+            video_id = info.get('id')
+            lyrics, found_lyrics = get_youtube_english_lyrics(video_id)
+
+            return {
+                'id': video_id,
+                'title': info.get('title'),
+                'webpage_url': info.get('webpage_url'),
+                'thumbnail': info.get('thumbnail'),
+                'lyrics': lyrics,
+                'found_lyrics': found_lyrics,
+                'story': '',
+                'summary': [],
+            }
+    except Exception as e:
+        print(f'Error fetching metadata for {url}: {e}')
+    return None
+
+
+def update_metadata(url: str = None) -> None:
     ydl_flat_opts = {
         'quiet': True,
         'no_warnings': True,
@@ -129,56 +125,41 @@ def fetch_youtube_metadata(url: str) -> None:
         'extract_flat': True
     }
 
-    metadata: List[dict] = load_json(METADATA_PATH)
-    existing_video_ids = {item['id'] for item in metadata if 'id' in item}
-
-    with yt_dlp.YoutubeDL(ydl_flat_opts) as ydl_flat:
-        try:
-            info_dict = ydl_flat.extract_info(url, download=False)
-            entries = info_dict.get('entries', []) if 'entries' in info_dict else [info_dict]
-        except yt_dlp.utils.DownloadError as e:
-            print(f'Error fetching info for {url}: {e}')
-            return
-        
-        playlist_title = info_dict.get('title', 'Unknown Playlist')[:50]
-        print(f'{playlist_title} ({len(entries)} videos)')
-
-        for entry in tqdm.tqdm(entries, desc=f'Processing videos from "{playlist_title}"'):
-            if entry is None:
-                continue
-
-            video_id = entry.get('id')
-            if not video_id or video_id in existing_video_ids:
-                continue
-
+    if url is None:
+        urls = [data['url'] for data in load_json(YOUTUBE_URLS_PATH)]
+    else:
+        urls = [url]
+    total_entries: List[dict] = []
+    for u in tqdm.tqdm(urls, desc='Fetching metadata from URLs'):
+        with yt_dlp.YoutubeDL(ydl_flat_opts) as ydl_flat:
             try:
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(entry.get('url'))
+                info_dict = ydl_flat.extract_info(u, download=False)
+                entries = info_dict.get('entries', []) if 'entries' in info_dict else [info_dict]
+                total_entries.extend(entries)
+            except yt_dlp.utils.DownloadError as e:
+                print(f'Error fetching info for {u}: {e}')
+      
 
-                    video_id = info.get('id')
-                    title = info.get('title')
-                    webpage_url = info.get('webpage_url')
-                    thumbnail = info.get('thumbnail')
-                    lyrics, found_lyrics = get_youtube_english_lyrics(video_id)
+    metadata = load_json(METADATA_PATH)
+    existing_data = {item['id']: item for item in metadata if 'id' in item}
+    existing_ids = set(existing_data.keys())
 
-                    metadata.append({
-                        'id': video_id,
-                        'title': title,
-                        'webpage_url': webpage_url,
-                        'thumbnail': thumbnail,
-                        'lyrics': lyrics,
-                        'found_lyrics': found_lyrics,
-                        'story': '',
-                        'summary': [],
-                    })
-                    save_json(metadata, METADATA_PATH)
-            except Exception as e:
-                print(f'Error processing video {video_id}: {e}')
+    new_metadata: List[dict] = [] if url is None else metadata.copy()
+    for entry in tqdm.tqdm(total_entries, desc='Updating metadata'):
+        if entry is None:
+            continue
+
+        video_id = entry.get('id')
+        if video_id in existing_ids:
+            if url is None:
+                new_metadata.append(existing_data[video_id])
+        else:
+            new_item = fetch_metatadata(entry.get('url') or entry.get('webpage_url'))
+            if new_item is not None:
+                new_metadata.append(new_item)
+
+    save_json(new_metadata, METADATA_PATH)
 
 
 if __name__ == '__main__':
-    urls = load_json(YOUTUBE_URLS_PATH)
-    for url in urls:
-        print(f'\n--- Starting processing for {url["title"]} ---')
-        fetch_youtube_metadata(url['url'])
-        print(f'--- Finished processing {url["title"]} ---\n')
+    update_metadata()
