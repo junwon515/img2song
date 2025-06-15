@@ -27,7 +27,7 @@ python -m venv .venv
 .venv\Scripts\activate
 
 # 의존성 설치
-pip install yt_dlp pillow librosa webvtt-py tqdm streamlit googletrans==4.0.0-rc1
+pip install yt_dlp pillow librosa webvtt-py tqdm streamlit matplotlib googletrans==4.0.0-rc1
 pip install transformers accelerate bitsandbytes
 pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu126
 ```

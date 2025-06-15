@@ -4,6 +4,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 from core.config import DEVICE, NPZ_PATH, CHECKPOINTS_DIR
 from clip_song_matcher.config import (
@@ -32,6 +33,8 @@ def train(npz_path: str = NPZ_PATH,
     )
     loss_fn = nn.CosineEmbeddingLoss()
 
+    epoch_losses = []
+
     for epoch in range(epochs):
         total_loss = 0
         for img_emb, txt_emb in tqdm(dataloader, desc=f'Epoch {epoch+1}/{epochs}'):
@@ -47,7 +50,9 @@ def train(npz_path: str = NPZ_PATH,
             optimizer.step()
             total_loss += loss.item()
 
-        print(f'Epoch {epoch+1}/{epochs}, Loss: {total_loss / len(dataloader):.4f}')
+        avg_loss = total_loss / len(dataloader)
+        epoch_losses.append(avg_loss)
+        print(f'Epoch {epoch+1}/{epochs}, Loss: {avg_loss:.4f}')
 
     if save_path is None:
         os.makedirs(CHECKPOINTS_DIR, exist_ok=True)
@@ -55,6 +60,17 @@ def train(npz_path: str = NPZ_PATH,
         proj_path = os.path.join(CHECKPOINTS_DIR, proj_filename)
     else:
         proj_path = save_path
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(range(1, epochs + 1), epoch_losses, marker='o', label='Train Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Training Loss Over Epochs')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(proj_path.replace('.pth', '_loss_plot.png'))
+    plt.show()
     
     torch.save({
         'proj_img': proj_img.state_dict(),
