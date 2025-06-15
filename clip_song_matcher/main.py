@@ -4,7 +4,7 @@ from clip_song_matcher.train import train
 
 from core.config import NPZ_PATH
 from clip_song_matcher.config import (
-    INPUT_DIM, PROJ_DIM, LEARNING_RATE, BATCH_SIZE, EPOCHS
+    INPUT_DIM, PROJ_DIM, BATCH_SIZE, TEMPERATURE, EPOCHS, LEARNING_RATE
 )
 
 
@@ -31,6 +31,7 @@ def main():
     train_parser.add_argument('--proj_dim', type=int, default=PROJ_DIM)
     train_parser.add_argument('--lr', type=float, default=LEARNING_RATE)
     train_parser.add_argument('--batch_size', type=int, default=BATCH_SIZE)
+    train_parser.add_argument('--temperature', type=float, default=TEMPERATURE)
     train_parser.add_argument('--epochs', type=int, default=EPOCHS)
     train_parser.add_argument('--save_path', type=str, default=None)
 
@@ -57,6 +58,7 @@ def main():
             proj_dim=args.proj_dim,
             lr=args.lr,
             batch_size=args.batch_size,
+            temperature=args.temperature,
             epochs=args.epochs,
             save_path=args.save_path
         )
