@@ -1,0 +1,16 @@
+[project]
+name = "img2song"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "googletrans==4.0.0rc1",
+    "librosa>=0.11.0",
+    "matplotlib>=3.10.3",
+    "pillow>=11.2.1",
+    "streamlit>=1.46.0",
+    "tqdm>=4.67.1",
+    "webvtt-py>=0.5.1",
+    "yt-dlp>=2025.6.9",
+]
